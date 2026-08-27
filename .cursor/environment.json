@@ -1,0 +1,10 @@
+{
+  "name": "FieldReport",
+  "install": "npm ci\nnpx playwright install chromium --with-deps",
+  "terminals": [
+    {
+      "name": "dev",
+      "command": "npm run dev -- --hostname 0.0.0.0 -p 3000"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FieldReport</string>
+    <string name="title_activity_main">FieldReport</string>
+    <string name="package_name">app.fieldreport.mobile</string>
+    <!-- Capacitor internal bridge scheme (= appId). Deep links use scheme "fieldreport" in AndroidManifest. -->
+    <string name="custom_url_scheme">app.fieldreport.mobile</string>
+</resources>

@@ -1,0 +1,63 @@
+# FieldReport — Cursor Rules
+
+## Project Overview
+FieldReport is a mobile-first SaaS for trades contractors (roofers, inspectors, restoration, HVAC, fencing, property managers, and any other trade).
+Contractors photograph a job site, narrate observations, and receive a professional branded report in minutes.
+
+## Product mode
+- Demo and live share the same API routes, store client, and UI flows.
+- Demo mode (default): no cloud credentials; server persists to `.fieldreport/` via `DemoRepository`.
+- Live mode: set Supabase + Stripe + Resend (+ OpenAI); `SupabaseRepository` and production services activate automatically.
+- Never crash public pages when unconfigured.
+
+## AI-first reports (non-negotiable)
+- OpenAI is the **primary** report author when `OPENAI_API_KEY` is set: full structure, prose, recommendations, photo vision, and PDF alignment.
+- Taxonomy / rule engine is a **fail-safe fallback only** when OpenAI is unset or errors — never the preferred path.
+- Users may upload any reference PDF; extracted text is evidence and AI aligns report structure to it.
+- Scanned PDFs: when plain-text extract is empty and OpenAI is configured, page images are OCR’d via vision before save.
+- Voice/typed notes update findings (selected photo transcription or job notes) — they do not rewrite the PDF. Regenerating rebuilds/patches the report from all current evidence and is free (does not consume monthly credits).
+- Reports keep version history (last 10) on regenerate; share URL stays on the current report id.
+- Monthly report counters roll over automatically by UTC month key.
+- Report scopes are freeform (any trade description). Catalog templates are optional shortcuts, not limits.
+- Voice: Whisper transcription when OpenAI is configured; browser SpeechRecognition otherwise; typed notes always available. Tap a photo to choose the note target.
+- Email: in-app compose + send (Resend when configured; demo logs otherwise). Contact Picker, paste/CSV import, recent + job-history emails; multi-recipient supported. Google/iCloud OAuth sync is out of MVP.
+- Do not invent measurements the inspector did not provide (AI prompts and engine must enforce this).
+
+## Tech stack
+- Next.js App Router (TypeScript)
+- Tailwind CSS
+- Demo store on server; API client in browser
+- Capacitor iOS/Android shell (`app.fieldreport.mobile`) loading the hosted app for store distribution
+- Native parity: Capacitor Camera, Share, deep links, offline banner, safe areas, mic permission preflight
+- RevenueCat for native IAP; Stripe for web checkout
+- Real forgot/reset password (demo token + live Supabase email)
+- Playwright for UI smoke tests; gap/live/native harness suites (see SMOKE-MATRIX.md)
+- tsx scripts for report-engine, mocked AI path, PDF extract, naming, billing, contacts
+
+## Monetization
+- Free / Starter / Pro / Team report limits
+- Web: Stripe Checkout (optional trial via STRIPE_TRIAL_DAYS)
+- Native: RevenueCat + App Store / Play subscriptions; webhook + client sync update `profile.plan`
+- Judge / promo unlock: `SHIPATON-JUDGE` → Pro (see SHIPATON.md)
+- Credential / DB / route naming: see NAMING-CONVENTIONS.md (`npm run test:naming`)
+- Launch runbook before/after credentials: LAUNCH.md (`npm run check:launch`)
+
+## UX rules
+- Mobile-first, sunlight-readable, 44px minimum touch targets
+- Empty, loading, error, and success states on every async flow
+- Voice notes AND typed field notes (never block on microphone)
+- Reports must look professional enough to send to a customer or insurer
+- Zero hard limits on which trades or report scopes users can describe
+
+## Taxonomy (fallback / suggestions only)
+- Catalog lives in `src/lib/taxonomy/` for onboarding suggestions and offline fallback sections.
+- Onboarding preferences filter **shortcuts**, not allowed scopes.
+- Universal templates: `general`, `move_in_out`. Legacy slugs remain valid via alias map.
+- Rule engine reads section headings only when AI is unavailable.
+
+## Business logic
+- Free: 3 reports/month
+- Starter: $29 — 30 reports/month
+- Pro: $59 — unlimited
+- Team: $99 — unlimited for this account (multi-seat invites are roadmap; not enforced as a separate org product in MVP)
+- Native field capture uses Capacitor Camera on iOS/Android; web uses file input with capture
