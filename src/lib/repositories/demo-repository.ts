@@ -327,7 +327,7 @@ export class DemoRepository implements FieldReportRepository {
 
   async generateReport(userId: string, jobId: string, content: ReportContent) {
     const file = await readStore();
-    let profile = applyMonthlyQuotaRollover(profileById(file.state, userId));
+    const profile = applyMonthlyQuotaRollover(profileById(file.state, userId));
     const jobIdx = file.state.jobs.findIndex((j) => j.id === jobId && j.userId === userId);
     if (jobIdx < 0) throw new Error("Job not found");
     const job = file.state.jobs[jobIdx];

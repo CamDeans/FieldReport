@@ -180,6 +180,11 @@ test.describe("user stories — contractor loop details", () => {
       buffer: TINY_PNG,
     });
     await expect(page.getByPlaceholder("Caption what you see").last()).toBeVisible();
+    await page.getByPlaceholder(/type a field note/i).fill("Visible granule loss near vent.");
+    await page.getByTestId("attach-note").click();
+    await page.getByTestId("generate-report").click();
+    await expect(page.getByTestId("annotated-photo-gallery")).toBeVisible();
+    await expect(page.getByTestId("photo-annotation-box").first()).toBeVisible();
   });
 
   test("billing shows web Stripe path and Shipaton promo panel", async ({ page }) => {

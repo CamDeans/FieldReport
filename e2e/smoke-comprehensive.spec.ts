@@ -407,9 +407,11 @@ test.describe("customer report pages", () => {
     await page.getByTestId("job-row-job_demo_hvac").click();
     await page.getByTestId("generate-report").click();
     await expect(page.getByTestId("report-preview")).toBeVisible();
+    await expect(page.getByTestId("annotated-photo-gallery")).toBeVisible();
     await page.getByTestId("customer-view").click();
     await expect(page).toHaveURL(/\/r\//);
     await expect(page.getByTestId("customer-report")).toBeVisible();
+    await expect(page.getByTestId("annotated-photo-gallery")).toBeVisible();
     await expect(page.getByRole("heading", { name: /Priya Nair/i })).toBeVisible();
     await expect(page.getByTestId("read-recorded")).toBeVisible();
   });

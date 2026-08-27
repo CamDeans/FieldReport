@@ -41,6 +41,8 @@ test.describe("launch readiness — no cloud credentials", () => {
 
     await page.getByTestId("generate-report").click();
     await expect(page.getByTestId("report-preview")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("annotated-photo-gallery")).toBeVisible();
+    await expect(page.getByTestId("photo-annotation-box").first()).toBeVisible();
     await expect(page.getByText("Recommended actions")).toBeVisible();
 
     await page.getByTestId("send-report").click();
@@ -58,6 +60,7 @@ test.describe("launch readiness — no cloud credentials", () => {
     await page.getByTestId("customer-view").click();
     await expect(page).toHaveURL(/\/r\//);
     await expect(page.getByTestId("customer-report")).toBeVisible();
+    await expect(page.getByTestId("annotated-photo-gallery")).toBeVisible();
     await expect(page.getByTestId("read-recorded")).toBeVisible();
   });
 

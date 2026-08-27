@@ -9,6 +9,7 @@ Live-only: `RUN_LIVE_SMOKE=1 LIVE_SMOKE_EMAIL=… LIVE_SMOKE_PASSWORD=… npm ru
 | A2 | Auth login/signup/forgot/reset | Yes | smoke, comprehensive |
 | A3 | Dashboard search/filter/nav mobile+desktop | Yes | smoke, comprehensive |
 | A4 | Job create → photo → note → generate → email → `/r` | Yes | smoke, launch-readiness |
+| **A4b** | Annotated photo gallery + highlight boxes in report + `/r` | Yes | smoke, launch-readiness, comprehensive, deep-smoke |
 | A5 | PDF text upload + delete | Yes | launch-readiness, gap-smoke |
 | A6 | Regenerate / version / dirty banner | Yes | comprehensive |
 | A7 | Billing plans + SHIPATON-JUDGE | Yes | comprehensive |
