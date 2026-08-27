@@ -370,7 +370,8 @@ export class DemoRepository implements FieldReportRepository {
     await writeStore(file);
     const updatedJob = file.state.jobs[jobIdx];
     const updatedProfile = file.state.profiles[profileIdx];
-    await this.savePublicSnapshot({ report, job: updatedJob, profile: updatedProfile });
+    const photos = file.state.photos.filter((p) => p.jobId === jobId);
+    await this.savePublicSnapshot({ report, job: updatedJob, profile: updatedProfile, photos });
     return { report, job: updatedJob, profile: updatedProfile };
   }
 
@@ -397,6 +398,7 @@ export class DemoRepository implements FieldReportRepository {
       report: file.state.reports[reportIdx],
       job: file.state.jobs[jobIdx],
       profile,
+      photos: file.state.photos.filter((p) => p.jobId === jobId),
     });
     return { job: file.state.jobs[jobIdx], report: file.state.reports[reportIdx] };
   }

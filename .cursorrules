@@ -11,8 +11,9 @@ Contractors photograph a job site, narrate observations, and receive a professio
 - Never crash public pages when unconfigured.
 
 ## AI-first reports (non-negotiable)
-- OpenAI is the **primary** report author when `OPENAI_API_KEY` is set: full structure, prose, recommendations, photo vision, and PDF alignment.
-- Taxonomy / rule engine is a **fail-safe fallback only** when OpenAI is unset or errors — never the preferred path.
+- OpenAI is the **primary** report author when `OPENAI_API_KEY` is set: full structure, prose, recommendations, photo vision, PDF alignment, and **photo highlight overlays** (colored rectangles on findings).
+- Taxonomy / rule engine is a **fail-safe fallback only** when OpenAI is unset or errors — never the preferred path. Fallback still attaches heuristic photo overlays from captions/notes.
+- Customer reports **include job photos** with severity-colored annotation boxes matching section findings.
 - Users may upload any reference PDF; extracted text is evidence and AI aligns report structure to it.
 - Scanned PDFs: when plain-text extract is empty and OpenAI is configured, page images are OCR’d via vision before save.
 - Voice/typed notes update findings (selected photo transcription or job notes) — they do not rewrite the PDF. Regenerating rebuilds/patches the report from all current evidence and is free (does not consume monthly credits).

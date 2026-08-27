@@ -436,7 +436,9 @@ export class SupabaseRepository implements FieldReportRepository {
       sentAt: (reportRow.sent_at as string | null) ?? null,
       readAt: (reportRow.read_at as string | null) ?? null,
     };
-    await this.savePublicSnapshot({ report, job, profile: updatedProfile });
+    const workspace = await this.getWorkspace(userId);
+    const photos = workspace.photos.filter((p) => p.jobId === jobId);
+    await this.savePublicSnapshot({ report, job, profile: updatedProfile, photos });
     return { report, job, profile: updatedProfile };
   }
 
@@ -465,7 +467,7 @@ export class SupabaseRepository implements FieldReportRepository {
       sentAt,
       readAt: (reportRow.read_at as string | null) ?? null,
     };
-    await this.savePublicSnapshot({ report, job, profile });
+    await this.savePublicSnapshot({ report, job, profile, photos: (await this.getWorkspace(userId)).photos.filter((p) => p.jobId === jobId) });
     return { job, report };
   }
 

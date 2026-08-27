@@ -8,13 +8,18 @@ import { Button } from "@/components/ui/button";
 import { ReportPreview } from "@/components/report-preview";
 import { api } from "@/lib/api/client";
 import { useStore } from "@/lib/store";
-import type { Job, Profile, Report } from "@/lib/types";
+import type { Job, Photo, Profile, Report } from "@/lib/types";
 
 export default function CustomerReportPage() {
   const params = useParams<{ id: string }>();
   const { markRead } = useStore();
   const marked = useRef(false);
-  const [snapshot, setSnapshot] = useState<{ report: Report; job: Job; profile: Profile } | null>(null);
+  const [snapshot, setSnapshot] = useState<{
+    report: Report;
+    job: Job;
+    profile: Profile;
+    photos?: Photo[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [readRecorded, setReadRecorded] = useState(false);
 
@@ -68,7 +73,12 @@ export default function CustomerReportPage() {
       <main id="main" className="max-w-5xl mx-auto px-4 py-8" data-testid="customer-report">
         {readRecorded && <span data-testid="read-recorded" className="sr-only">Read recorded</span>}
         <p className="text-sm text-slate-500 mb-4">Customer copy of this inspection report.</p>
-        <ReportPreview job={snapshot.job} profile={snapshot.profile} report={snapshot.report} />
+        <ReportPreview
+          job={snapshot.job}
+          profile={snapshot.profile}
+          report={snapshot.report}
+          photos={snapshot.photos ?? []}
+        />
       </main>
     </div>
   );

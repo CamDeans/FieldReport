@@ -163,6 +163,9 @@ export function formatReportPlainText(job: Job, profile: Profile, content: Repor
     .map((rec) => `${rec.priority}: ${rec.item} — ${rec.detail}`)
     .join("\n");
   const sections = content.sections.map((section) => `${section.heading} (${section.severity})\n${section.body}`).join("\n\n");
+  const annotations = (content.photo_annotations ?? [])
+    .map((a) => `- [${a.severity}] ${a.label}${a.sectionHeading ? ` (${a.sectionHeading})` : ""} [photo ${a.photoId}]`)
+    .join("\n");
   return [
     content.title,
     profile.companyName || profile.fullName,
@@ -173,6 +176,7 @@ export function formatReportPlainText(job: Job, profile: Profile, content: Repor
     content.overall_condition_note,
     content.summary,
     sections,
+    annotations ? `Photo highlights\n${annotations}` : null,
     "Recommended actions",
     recs,
     content.inspector_notes,

@@ -150,6 +150,8 @@ test.describe("authenticated product", () => {
     await page.getByTestId("attach-note").click();
     await page.getByTestId("generate-report").click();
     await expect(page.getByTestId("report-preview")).toBeVisible();
+    await expect(page.getByTestId("annotated-photo-gallery")).toBeVisible();
+    await expect(page.getByTestId("photo-annotation-box").first()).toBeVisible();
     await expect(page.getByText("Recommended actions")).toBeVisible();
     await expect(page.getByTestId("print-report")).toBeEnabled();
     await page.getByTestId("send-report").click();
@@ -159,6 +161,7 @@ test.describe("authenticated product", () => {
     await page.getByTestId("email-preview").getByRole("button", { name: "Close" }).click();
     await page.getByTestId("customer-view").click();
     await expect(page.getByTestId("customer-report")).toBeVisible();
+    await expect(page.getByTestId("annotated-photo-gallery")).toBeVisible();
     await expect(page.getByTestId("read-recorded")).toBeVisible();
     await page.goto("/dashboard");
     await page.getByText("Sarah Johnson").click();

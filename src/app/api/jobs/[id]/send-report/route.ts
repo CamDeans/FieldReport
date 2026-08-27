@@ -16,11 +16,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       body = {};
     }
     const { job, report } = await session.repo.sendReport(session.userId, id, body);
-    const profile = (await session.repo.getWorkspace(session.userId)).profiles[0];
+    const workspace = await session.repo.getWorkspace(session.userId);
+    const profile = workspace.profiles[0];
+    const photos = workspace.photos.filter((p) => p.jobId === id);
     const email = await sendReportEmail({
       job,
       report,
       profile,
+      photos,
       to: body.to,
       subject: body.subject,
       message: body.message,

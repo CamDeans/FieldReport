@@ -25,6 +25,8 @@ export interface PublicReportSnapshot {
   report: Report;
   job: Job;
   profile: Profile;
+  /** Job photos frozen at send/generate time for customer annotated gallery */
+  photos?: Photo[];
 }
 
 export interface AddDocumentInput {

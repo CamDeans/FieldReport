@@ -583,7 +583,9 @@ export function JobWorkspace({ jobId }: { jobId: string }) {
         </Button>
       </div>
 
-      {report && <ReportPreview job={currentJob} profile={profile} report={report} />}
+      {report && (
+        <ReportPreview job={currentJob} profile={profile} report={report} photos={photos} />
+      )}
 
       {composeOpen && report && (
         <EmailComposeDialog

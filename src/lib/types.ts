@@ -83,6 +83,23 @@ export interface ReportRecommendation {
   detail: string;
 }
 
+/** Colored rectangle overlay on a job photo — coords are normalized 0–1. */
+export interface PhotoAnnotationBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface PhotoAnnotation {
+  id: string;
+  photoId: string;
+  label: string;
+  severity: Severity;
+  sectionHeading: string | null;
+  box: PhotoAnnotationBox;
+}
+
 export interface ReportContent {
   title: string;
   overall_condition: Condition;
@@ -92,6 +109,11 @@ export interface ReportContent {
   recommendations: ReportRecommendation[];
   inspector_notes: string;
   disclaimer: string;
+  /**
+   * Vision-derived (or fallback) highlight boxes drawn on job photos in the
+   * customer report. Empty when the job has no photos.
+   */
+  photo_annotations?: PhotoAnnotation[];
 }
 
 export interface ReportVersion {
@@ -151,7 +173,7 @@ export const PLAN_PRICES: Record<Plan, { monthly: number; label: string; limit: 
     monthly: 59,
     label: "Pro",
     limit: "Unlimited reports",
-    features: ["Unlimited reports", "AI vision + PDF OCR", "Any custom scope", "Branded reports", "Version history", "Customer-ready PDF/print"],
+    features: ["Unlimited reports", "AI vision + PDF OCR", "Photo highlight overlays", "Any custom scope", "Branded reports", "Version history", "Customer-ready PDF/print"],
   },
   team: {
     monthly: 99,

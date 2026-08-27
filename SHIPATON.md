@@ -22,8 +22,8 @@ Deadline: **Sep 30, 2026 @ 11:45pm PDT**
 
 | Lens | ~% | Notes |
 |------|----|-------|
-| Web product MVP | **95%** | Full contractor loop; remaining: Team seats, Stripe portal, offline queue |
-| Native Shipaton shell | **95%** | Parity with web + Camera/Share/deep links/offline banner/password reset/RC IAP |
+| Web product MVP | **95%** | Full contractor loop + annotated photo reports; remaining: Team seats, Stripe portal, offline queue |
+| Native Shipaton shell | **95%** | Parity with web + Camera/Share/deep links/offline banner/password reset/RC IAP + annotated report UI via hosted WebView |
 | Contest ops / store submit | **60–70%** | Deploy URL, RC products, public store release, video, screenshot still on you |
 
 ## Architecture

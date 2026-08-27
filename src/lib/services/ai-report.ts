@@ -2,6 +2,7 @@ import OpenAI, { toFile } from "openai";
 import { isOpenAiConfigured } from "../config";
 import { getJobType, getJobTypeLabel, isCatalogJobType } from "../taxonomy";
 import { validateReportContent } from "../report-engine";
+import { normalizePhotoAnnotations } from "./photo-annotations";
 import type {
   Condition,
   Job,
@@ -22,8 +23,12 @@ const PRIORITIES: Priority[] = ["Immediate", "Soon", "Recommended", "Maintenance
 export function evidenceLines(job: Job, photos: Photo[], documents: JobDocument[]) {
   return [
     job.notes,
-    ...photos.map((p) => `[Photo] ${p.caption}`.trim()),
-    ...photos.map((p) => p.transcription),
+    ...photos.map((p) => {
+      const bits = [`[Photo id=${p.id}]`];
+      if (p.caption.trim()) bits.push(`caption: ${p.caption.trim()}`);
+      if (p.transcription.trim()) bits.push(`field note: ${p.transcription.trim()}`);
+      return bits.join(" ");
+    }),
     ...documents.map((d) => `[Reference PDF: ${d.fileName}]\n${d.extractedText}`),
   ]
     .map((s) => s.trim())
@@ -42,7 +47,12 @@ function clampPriority(value: unknown): Priority {
   return PRIORITIES.includes(value as Priority) ? (value as Priority) : "Recommended";
 }
 
-export function normalizeAiContent(raw: Partial<ReportContent>, job: Job, profile: Profile, photos: Photo[]): ReportContent {
+export function normalizeAiContent(
+  raw: Partial<ReportContent> & { photo_annotations?: unknown },
+  job: Job,
+  profile: Profile,
+  photos: Photo[]
+): ReportContent {
   const label = getJobTypeLabel(job.jobType);
   const sections: ReportSection[] = (raw.sections ?? [])
     .filter((s) => s?.heading && s?.body)
@@ -87,6 +97,12 @@ export function normalizeAiContent(raw: Partial<ReportContent>, job: Job, profil
           },
         ];
 
+  const photo_annotations = normalizePhotoAnnotations(
+    raw.photo_annotations ?? (raw as { photoAnnotations?: unknown }).photoAnnotations,
+    photos,
+    ensuredSections
+  );
+
   return {
     title: (raw.title && String(raw.title).trim()) || `${label} — ${job.customerName}`,
     overall_condition: clampCondition(raw.overall_condition),
@@ -104,6 +120,7 @@ export function normalizeAiContent(raw: Partial<ReportContent>, job: Job, profil
     disclaimer:
       (raw.disclaimer && String(raw.disclaimer).trim()) ||
       "This report reflects conditions reasonably visible at the time of inspection. Concealed, inaccessible, or weather-changed conditions may differ. No destructive testing was performed unless noted. This document is not a warranty, insurance policy, or engineering stamp.",
+    photo_annotations,
   };
 }
 
@@ -111,6 +128,7 @@ export function normalizeAiContent(raw: Partial<ReportContent>, job: Job, profil
  * Primary report author when OPENAI_API_KEY is set.
  * Uses vision on job photos + all field evidence. Taxonomy is not used for structure.
  * When previousContent is provided, OpenAI patches the existing report instead of drafting from scratch.
+ * Also returns photo_annotations — colored rectangle overlays matching findings in the photos.
  */
 export async function generateReportWithOpenAi(
   job: Job,
@@ -133,8 +151,15 @@ export async function generateReportWithOpenAi(
       : "No reference PDF was uploaded.";
 
     const updateHint = previousContent
-      ? `This is an UPDATE to an existing report (incremental regenerate). Preserve useful structure and section headings when still relevant. Incorporate new field evidence; revise summary, condition, sections, and recommendations accordingly. Return a complete replacement JSON report — not a diff.\n\nPrevious report JSON:\n${JSON.stringify(previousContent)}`
+      ? `This is an UPDATE to an existing report (incremental regenerate). Preserve useful structure and section headings when still relevant. Incorporate new field evidence; revise summary, condition, sections, recommendations, and photo_annotations accordingly. Return a complete replacement JSON report — not a diff.\n\nPrevious report JSON:\n${JSON.stringify(previousContent)}`
       : "This is a first draft for this job.";
+
+    const photoIndex = photos
+      .map((p, i) => {
+        const note = [p.caption, p.transcription].map((s) => s.trim()).filter(Boolean).join(" | ") || "(no caption yet)";
+        return `Photo ${i + 1}: photo_id="${p.id}" — ${note}`;
+      })
+      .join("\n");
 
     const textBlock = [
       `Company: ${profile.companyName || profile.fullName}`,
@@ -147,13 +172,17 @@ export async function generateReportWithOpenAi(
       pdfHint,
       updateHint,
       "",
+      "Photos available for annotation (use these exact photo_id values in photo_annotations):",
+      photoIndex || "(no photos)",
+      "",
       "Field evidence (do not invent measurements or findings not supported by this evidence or the photos):",
       ...evidenceLines(job, photos, documents),
     ].join("\n");
 
+    // High detail improves localization for colored highlight boxes
     const imageParts = photos.slice(0, 6).map((photo) => ({
       type: "image_url" as const,
-      image_url: { url: photo.dataUrl, detail: "low" as const },
+      image_url: { url: photo.dataUrl, detail: "high" as const },
     }));
 
     const complete = options?.complete ?? defaultComplete;
@@ -171,6 +200,20 @@ Write a complete customer-ready inspection / field report as JSON with exactly t
 - recommendations (array of { priority ("Immediate"|"Soon"|"Recommended"|"Maintenance"), item, detail }) — at least 2
 - inspector_notes (string)
 - disclaimer (string)
+- photo_annotations (array) — REQUIRED when photos are provided. Each item:
+  {
+    "photo_id": "<exact id from the photo list>",
+    "label": "short finding label matching the report text",
+    "severity": "Info"|"Advisory"|"Attention"|"Urgent",
+    "section_heading": "matching section heading when applicable",
+    "x": 0-1, "y": 0-1, "width": 0-1, "height": 0-1
+  }
+  Coordinates are normalized fractions of the photo (x,y = top-left of a colored rectangle). Place 1–4 tight boxes per photo around the visible defects or areas discussed in sections and field notes. Do not invent boxes for things not visible. Prefer Urgent/Attention for damage; Advisory/Info for context.
+
+How field notes work:
+- Typed job notes and per-photo voice/typed transcriptions are inspector evidence — professionalize them into section prose without inventing new facts.
+- Captions describe what the photo shows; transcriptions are spoken/typed observations about that photo or the job.
+- Photos are both vision evidence AND must appear as annotated evidence in photo_annotations.
 
 Rules:
 - Never invent measurements, quantities, or findings not supported by the evidence or photos.
@@ -185,7 +228,7 @@ Rules:
     ]);
 
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<ReportContent>;
+    const parsed = JSON.parse(raw) as Partial<ReportContent> & { photo_annotations?: unknown };
     const content = normalizeAiContent(parsed, job, profile, photos);
     const { passed } = validateReportContent(content);
     return passed ? content : content;
@@ -196,7 +239,10 @@ Rules:
 
 type ChatMessage =
   | { role: "system"; content: string }
-  | { role: "user"; content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string; detail: "low" | "high" } }> };
+  | {
+      role: "user";
+      content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string; detail: "low" | "high" } }>;
+    };
 
 async function defaultComplete(messages: ChatMessage[]): Promise<string | null> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

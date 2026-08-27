@@ -78,7 +78,8 @@ async function main() {
     assert.ok(lines.some((l) => l.includes("Active leak")));
     assert.ok(lines.some((l) => l.includes("Reference PDF: prior.pdf")));
     assert.ok(lines.some((l) => l.includes("Homeowner reported")));
-    pass("evidenceLines includes notes, transcription, PDF");
+    assert.ok(lines.some((l) => l.includes("photo id=p1") || l.includes("[Photo id=p1]")));
+    pass("evidenceLines includes notes, transcription, PDF, photo id");
   }
 
   {
@@ -144,7 +145,7 @@ async function main() {
           title: "Updated Hail Report",
           overall_condition: "Poor",
           overall_condition_note: "Leak confirmed.",
-          summary: "Updated after new voice note evidence.",
+          summary: "Updated after new voice note evidence with photo highlights for chimney flashing.",
           sections: [
             { heading: "Roof covering", severity: "Attention", body: "Granule loss." },
             { heading: "Flashings", severity: "Urgent", body: "Active leak at chimney flashing." },
@@ -157,6 +158,18 @@ async function main() {
           ],
           inspector_notes: "Voice note incorporated.",
           disclaimer: "Visible only.",
+          photo_annotations: [
+            {
+              photo_id: "p1",
+              label: "Chimney flashing leak",
+              severity: "Urgent",
+              section_heading: "Flashings",
+              x: 0.35,
+              y: 0.2,
+              width: 0.3,
+              height: 0.25,
+            },
+          ],
         });
       },
     });
@@ -164,6 +177,8 @@ async function main() {
     assert.equal(sawUpdateHint, true);
     assert.equal(content!.title, "Updated Hail Report");
     assert.match(content!.sections[1].body, /Active leak/i);
+    assert.equal(content!.photo_annotations?.length, 1);
+    assert.equal(content!.photo_annotations![0].photoId, "p1");
     pass("mocked OpenAI incremental update path");
   }
 

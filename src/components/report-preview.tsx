@@ -1,18 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import { AnnotatedPhotoGallery } from "@/components/annotated-photo";
 import { CONDITION_CONFIG, PRIORITY_CONFIG, SEVERITY_CONFIG } from "@/lib/job-catalog";
-import type { Job, Profile, Report, ReportContent } from "@/lib/types";
+import type { Job, Photo, Profile, Report, ReportContent } from "@/lib/types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 
-export function ReportPreview({ job, profile, report }: { job: Job; profile: Profile; report: Report }) {
+export function ReportPreview({
+  job,
+  profile,
+  report,
+  photos = [],
+}: {
+  job: Job;
+  profile: Profile;
+  report: Report;
+  photos?: Photo[];
+}) {
   const [viewing, setViewing] = useState<"current" | number>("current");
   const history = report.history ?? [];
   const content: ReportContent =
     viewing === "current" ? report.content : history[viewing]?.content ?? report.content;
   const condition = CONDITION_CONFIG[content.overall_condition];
   const versionLabel = viewing === "current" ? report.version ?? 1 : history[viewing]?.version;
+  const annotations = content.photo_annotations ?? [];
 
   return (
     <article id="report-preview" className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm" data-testid="report-preview">
@@ -77,6 +89,7 @@ export function ReportPreview({ job, profile, report }: { job: Job; profile: Pro
             </section>
           ))}
         </div>
+        {photos.length > 0 ? <AnnotatedPhotoGallery photos={photos} annotations={annotations} /> : null}
         <div>
           <h3 className="font-semibold mb-3">Recommended actions</h3>
           <ul className="space-y-3">

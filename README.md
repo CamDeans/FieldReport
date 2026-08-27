@@ -14,9 +14,10 @@ Demo and production use **the same UI and API routes**. The browser talks to `/a
 ### Report generation (AI-first)
 
 1. **Primary:** OpenAI (`gpt-4o-mini` + vision) drafts the full report from photos, captions, voice notes, and freeform scope.
-2. **Fallback only:** Taxonomy rule engine if `OPENAI_API_KEY` is missing or the AI call fails.
-3. **Scopes:** Type any trade description — catalog shortcuts are optional, not limits.
-4. **Voice:** Whisper via `/api/transcribe` when OpenAI is set; otherwise on-device speech; typing always works.
+2. **Photo highlights:** OpenAI places colored rectangle overlays on photos for findings discussed in the report (Urgent / Attention / Advisory / Info). Fallback mode still adds heuristic overlays from captions/notes.
+3. **Fallback only:** Taxonomy rule engine if `OPENAI_API_KEY` is missing or the AI call fails.
+4. **Scopes:** Type any trade description — catalog shortcuts are optional, not limits.
+5. **Voice:** Whisper via `/api/transcribe` when OpenAI is set; otherwise on-device speech; typing always works.
 
 Other production services (when configured):
 

@@ -43,3 +43,5 @@ yarn-error.log*
 /.fieldreport/
 
 tsconfig.tsbuildinfo
+*.bundle
+fieldreport-export.tar.gz

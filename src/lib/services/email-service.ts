@@ -18,11 +18,13 @@ export async function sendReportEmail(input: {
   job: Job;
   report: Report;
   profile: Profile;
+  photos?: import("../types").Photo[];
   to?: string;
   subject?: string;
   message?: string;
 }) {
   const { job, report, profile } = input;
+  const photos = input.photos ?? [];
   const recipients = parseRecipients(input.to || job.customerEmail || "");
   if (!recipients.length) throw new Error("Customer email is required.");
 
@@ -35,8 +37,12 @@ export async function sendReportEmail(input: {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")}</p>`
     : "";
-  const html = `${intro}${buildReportEmailHtml(job, profile, report.content)}`;
-  const text = [input.message?.trim(), formatReportPlainText(job, profile, report.content), `View online: ${shareUrl}`]
+  const html = `${intro}${buildReportEmailHtml(job, profile, report.content, photos)}`;
+  const text = [
+    input.message?.trim(),
+    formatReportPlainText(job, profile, report.content),
+    photos.length ? `Photos attached in HTML / view online with highlight overlays: ${shareUrl}` : `View online: ${shareUrl}`,
+  ]
     .filter(Boolean)
     .join("\n\n");
 

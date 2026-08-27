@@ -72,7 +72,7 @@ export const api = {
     ),
   markReportRead: (reportId: string) => request<{ read: boolean }>(`/api/reports/${reportId}/read`, { method: "POST" }),
   getPublicReport: (reportId: string) =>
-    request<{ report: Report; job: Job; profile: Profile }>(`/api/reports/public/${reportId}`),
+    request<{ report: Report; job: Job; profile: Profile; photos?: Photo[] }>(`/api/reports/public/${reportId}`),
   checkout: (plan: Plan) =>
     request<{ url: string; mode: AppMode }>("/api/billing/checkout", { method: "POST", body: JSON.stringify({ plan }) }),
   syncRevenueCat: (input: { entitlements: string[]; appUserId?: string }) =>
